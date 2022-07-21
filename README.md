@@ -16,6 +16,21 @@ python fan_controller/fan_controller.py
 
 ## Usage
 
+```
+usage: fan_controller.py [-h] [--min MIN] [--max MAX] [-l] [-p PATH] [-f [0-100]] [--minpwm [0-100]] [--gpu]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --min MIN             Fan will only switch on above set temperature threshold. Default: 40C.
+  --max MAX             Fan speed will be maximum above set temperature. Default: 60C.
+  -l, --log             Log to a file. Set path with '--path'.
+  -p PATH, --path PATH  Set path of logfile. Default: 'fan_controller.log' in folder as script.
+  -f [0-100], --force [0-100]
+                        Set a static fan speed, values from 0-100.
+  --minpwm [0-100]      Set minimum fan speed. Default: 24 percent (fanPWM: 60).
+  --gpu                 Use GPU temperature instead of CPU temperature.
+```
+
 ### Automatic mode
 
 Enables fan if temperature is between tempMax = 70 and tempMin = 35 where tempMax is 100% fan speed and tempMin is 23%.
