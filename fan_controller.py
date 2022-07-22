@@ -12,7 +12,7 @@ PWMPATH = "/sys/devices/platform/pwm-fan/hwmon/hwmon2/pwm1"
 
 
 def check_force():
-    ''' check if PWM value is forced '''
+    ''' checks if PWM value is forced, runs PWM write accordingly '''
     if args.force is not None:
         write_to_pwm(percentage_to_pwm(args.force))
         return
@@ -149,7 +149,7 @@ parser.add_argument("-l", "--log", action="store_true",
 parser.add_argument(
     "-p",
     "--path",
-    help="Set path of logfile. Default: 'fan_controller.log' in folder as script.")
+    help="Set path of logfile. Default: 'fan_controller.log' in folder of script.")
 parser.add_argument(
     "-f",
     "--force",
@@ -160,7 +160,7 @@ parser.add_argument(
     "--minpwm",
     type=check_range_0_100,
     metavar="[0-100]",
-    help="Set minimum fan speed. Default: 24 percent (fanPWM: 60).")
+    help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
 parser.add_argument("--gpu", action="store_true",
                     help="Use GPU temperature instead of CPU temperature.")
 
