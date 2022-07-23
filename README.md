@@ -12,7 +12,7 @@ This script is system agnostic. If you find another SBC this script works for le
 mkdir fan_controller
 ```
 ```sh
-wget https://raw.githubusercontent.com/kromsam/FanControlerRockPro64/master/fan_controller.py -O fan_controller/fan_controller.py
+wget https://raw.githubusercontent.com/kromsam/FanControlerRockPro64/main/fan_controller.py -O fan_controller/fan_controller.py
 ```
 ```sh
 python fan_controller/fan_controller.py
