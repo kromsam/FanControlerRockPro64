@@ -2,7 +2,7 @@
 
 Python script to control fan on a Pine64 RockPro64 single board computer.
 
-The cooling method is slightly based on [ATS/tuxd3v](https://github.com/tuxd3v/ats). Using LibreELEC I couldn' make use of their work, because LibreELEC does not support LUA. Therefore, this is a Python implementation.
+The cooling method is slightly based on [ATS/tuxd3v](https://github.com/tuxd3v/ats). Using LibreELEC I couldn't make use of their work, because LibreELEC does not support LUA. Therefore, this is a Python implementation.
 
 This script is system agnostic. If you find another SBC this script works for let me know and I will make a list. You might have to change the constants the script uses (written down at the end of this file). Feel free to come up with further suggestions.
 
