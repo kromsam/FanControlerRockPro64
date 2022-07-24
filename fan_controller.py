@@ -11,26 +11,6 @@ PWMMAX = 255
 PWMPATH = "/sys/devices/platform/pwm-fan/hwmon/hwmon2/pwm1"
 
 
-def check_force():
-    ''' checks if PWM value is forced, runs PWM write accordingly '''
-    if args.force is not None:
-        write_to_pwm(percentage_to_pwm(args.force))
-        return
-    write_to_pwm(temperature_to_pwm())
-
-
-def check_range_0_100(arg):
-    ''' checks if argument is integer between 0 and 101 '''
-    try:
-        value = int(arg)
-    except ValueError as err:
-        raise argparse.ArgumentTypeError(str(err))
-    if value < 0 or value > 100:
-        message = "Expected 0 <= value <= 100, got value = " + str(value)
-        raise argparse.ArgumentTypeError(message)
-    return value
-
-
 def log_now():
     ''' appends a logline to a logfile'''
     with open(get_log_path(), 'a', encoding="utf-8") as file:
@@ -46,7 +26,7 @@ def get_log_path():
 
 
 def get_pwm():
-    ''' gets current PWM value of fan '''
+    ''' returns current PWM value of fan '''
     with open(PWMPATH, 'r', encoding="utf-8") as file:
         return file.readlines()[0].replace('\n', '')
 
@@ -58,8 +38,15 @@ def get_pwm_min():
     return 60
 
 
+def get_pwm_new():
+    ''' returns new (forced) PWM value '''
+    if args.force is not None:
+        return percentage_to_pwm(args.force)
+    return temperature_to_pwm(get_temp())
+
+
 def get_temp():
-    ''' gets temperature from hwmon, converts it to degrees celsius '''
+    ''' returns degrees celsius temperature from monitor '''
     with open(get_temp_path(), 'r', encoding="utf-8") as file:
         temperature = int(file.read().replace('\n', ''))
         return temperature / 1000
@@ -87,18 +74,20 @@ def get_temp_path():
 
 
 def percentage_to_pwm(percentage):
-    ''' converts percentage to PWM value'''
+    ''' returns percentage as PWM value'''
+    if percentage < 0 or percentage > 100:
+        message = "Expected 0 <= value <= 100, got value = " + str(percentage)
+        raise argparse.ArgumentTypeError(message)
     return round(percentage / 100 * PWMMAX)
 
 
 def pwm_to_percentage(pwm):
-    ''' converts PWM value to percentage'''
+    ''' returns PWM value as percentage'''
     return round(pwm / PWMMAX * 100)
 
 
-def temperature_to_pwm():
-    ''' returns a PWM value for a given temperature '''
-    temperature = get_temp()
+def temperature_to_pwm(temperature):
+    ''' returns matching PWM value for a given temperature '''
     try:
         get_temp_min() > get_temp_max()
     except ValueError as exc:
@@ -112,9 +101,10 @@ def temperature_to_pwm():
                  * (temperature - get_temp_min()))
 
 
-def write_to_pwm(pwm):
-    ''' checks PWM value, writes it to PWM file and prints an output'''
-    print("Current temperature: " + str(get_temp()) + "C")
+def write_pwm(pwm):
+    ''' writes checked PWM value to PWM file, prints output if not quiet '''
+    if args.quiet is False:
+        print("Current temperature: " + str(get_temp()) + "C")
     try:
         value = int(pwm)
     except ValueError as err:
@@ -125,48 +115,52 @@ def write_to_pwm(pwm):
     with open(PWMPATH, 'w', encoding="utf-8") as file:
         if get_pwm_min() > pwm > 0:
             file.write(str(get_pwm_min()))
-            print("Fan set to minimum fan speed: " +
-                  str(pwm_to_percentage(get_pwm_min())) +
-                  "% (fanPWM: " +
-                  str(get_pwm_min()) +
-                  ")")
+            if args.quiet is False:
+                print("Fan set to minimum fan speed: " +
+                      str(pwm_to_percentage(get_pwm_min())) +
+                      "% (PWM value: " +
+                      str(get_pwm_min()) +
+                      ")")
             return
         file.write(str(pwm))
-        print("Fan set to: " + str(pwm_to_percentage(pwm)) +
-              "% (fanPWM: " + str(pwm) + ")")
+        if args.quiet is False:
+            print("Fan set to: " + str(pwm_to_percentage(pwm)) +
+                  "% (PWM value: " + str(pwm) + ")")
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--min", type=int,
-    help="Fan will only switch on above set temperature threshold. Default: 40C.")
+    "-f",
+    "--force",
+    type=int,
+    metavar="[0-100]",
+    help="Set a static fan speed, values from 0-100.")
+parser.add_argument("--gpu", action="store_true",
+                    help="Use GPU temperature instead of CPU temperature.")
+parser.add_argument("-l", "--log", action="store_true",
+                    help="Log to a file. Set path with '--path'.")
 parser.add_argument(
     "--max",
     type=int,
     help="Fan speed will be maximum above set temperature. Default: 60C.")
-parser.add_argument("-l", "--log", action="store_true",
-                    help="Log to a file. Set path with '--path'.")
+parser.add_argument(
+    "--min", type=int,
+    help="Fan will only switch on above set temperature threshold. Default: 40C.")
+parser.add_argument(
+    "--minpwm",
+    type=int,
+    metavar="[0-100]",
+    help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
 parser.add_argument(
     "-p",
     "--path",
     help="Set path of logfile. Default: 'fan_controller.log' in folder of script.")
-parser.add_argument(
-    "-f",
-    "--force",
-    type=check_range_0_100,
-    metavar="[0-100]",
-    help="Set a static fan speed, values from 0-100.")
-parser.add_argument(
-    "--minpwm",
-    type=check_range_0_100,
-    metavar="[0-100]",
-    help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
-parser.add_argument("--gpu", action="store_true",
-                    help="Use GPU temperature instead of CPU temperature.")
+parser.add_argument("-q", "--quiet", action="store_true",
+                    help="Run script quietly.")
 
 args = parser.parse_args()
 
-check_force()
+write_pwm(get_pwm_new())
 
 if args.log:
     log_now()
