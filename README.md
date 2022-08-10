@@ -41,7 +41,7 @@ The fan will be switched on with its minimum speed when the minimum temperature 
 
 #### Configuration
 
-Set up a cronjob (in this example the script runs every minute).
+Set up a cronjob (`crontab -e`) (in this example the script runs every minute).
 ```sh
 */1 * * * * python fan_controller/fan_controller.py
 ```
