@@ -54,7 +54,9 @@ def get_pwm_path():
     ''' returns path to pwm fan '''
     if args.nooverride:
         return PWMPATH
-    return subprocess.check_output("find /sys -name pwm1 | grep hwmon",shell=True).decode().strip('\n')
+    return subprocess.check_output(
+        "find /sys -name pwm1 | grep hwmon",
+        shell=True).decode().strip('\n')
 
 
 def get_temp():
@@ -104,7 +106,7 @@ def temperature_to_pwm(temperature):
         get_temp_min() > get_temp_max()
     except ValueError as exc:
         raise ValueError(
-            "Minimum temperature can't be higher than maximum temperature.") from exc
+            "Mini temperature can't be higher than max temperature.") from exc
     if temperature >= get_temp_max():
         return get_pwm_max()
     if temperature < get_temp_min():
@@ -142,7 +144,10 @@ def write_pwm(pwm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nooverride", action="store_true", help="Do not auto-override PWMPATH value.")
+    parser.add_argument(
+        "--nooverride",
+        action="store_true",
+        help="Do not auto-override PWMPATH value.")
     parser.add_argument(
         "-f",
         "--force",
@@ -150,25 +155,25 @@ if __name__ == "__main__":
         metavar="[0-100]",
         help="Set a static fan speed, values from 0-100.")
     parser.add_argument("--gpu", action="store_true",
-                    help="Use GPU temperature instead of CPU temperature.")
+                        help="Use GPU temperature instead of CPU temperature.")
     parser.add_argument("-l", "--log", action="store_true",
-                    help="Log to a file. Set path with '--path'.")
+                        help="Log to a file. Set path with '--path'.")
     parser.add_argument(
         "--max",
         type=int,
         help="Fan speed will be maximum above set temperature. Default: 60C.")
     parser.add_argument(
         "--min", type=int,
-        help="Fan will only switch on above set temperature threshold. Default: 40C.")
+        help="Fan only switches on above temperature threshold. Default: 40C.")
     parser.add_argument(
         "--minpwm",
         type=int,
         metavar="[0-100]",
-        help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
+        help="Set min fan speed, from 0-100. Default: 24 (PWM value: 60).")
     parser.add_argument(
         "-p",
         "--path",
-        help="Set path of logfile. Default: 'fan_controller.log' in folder of script.")
+        help="Path of logfile. Default: 'fan_controller.log' in same folder.")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Run script quietly.")
 
