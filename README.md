@@ -21,19 +21,31 @@ python fan_controller/fan_controller.py
 ## Usage
 
 ```
-usage: fan_controller.py [-h] [--min MIN] [--max MAX] [-l] [-p PATH] [-f [0-100]] [--minpwm [0-100]] [--gpu]
+usage: fan_controller.py [-h] [--nooverride] [-f [0-100]] [--gpu] [-l] [--max MAX] [--min MIN] [--minpwm [0-100]] [-p PATH] [-q]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --min MIN             Fan will only switch on above set temperature threshold. Default: 40C.
-  --max MAX             Fan speed will be maximum from set temperature. Default: 60C.
-  -l, --log             Log to a file. Set path with '--path'.
-  -p PATH, --path PATH  Set path of logfile. Default: 'fan_controller.log' in folder of script.
+  --nooverride          Do not auto-override PWMPATH value.
   -f [0-100], --force [0-100]
                         Set a static fan speed, values from 0-100.
-  --minpwm [0-100]      Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).
   --gpu                 Use GPU temperature instead of CPU temperature.
+  -l, --log             Log to a file. Set path with '--path'.
+  --max MAX             Fan speed will be maximum above set temperature. Default: 60C.
+  --min MIN             Fan will only switch on above set temperature threshold. Default: 40C.
+  --minpwm [0-100]      Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).
+  -p PATH, --path PATH  Set path of logfile. Default: 'fan_controller.log' in folder of script.
+  -q, --quiet           Run script quietly.
 ```
+
+### Finding path of PWM
+
+The script will use the following command to automatically find the correct path to the PWM file.
+
+```sh
+find /sys -name pwm1 | grep hwmon
+```
+
+You can stop this behaviour by changing the `PWMPATH` to the correct path and using the `--nooverride` flag.
 
 ### Automatic mode
 
@@ -65,10 +77,4 @@ PWMMAX = 255
 PWMPATH = "/sys/devices/platform/pwm-fan/hwmon/hwmon2/pwm1"
 ```
 
-## Troubleshooting
 
-If the script can't find PWM with the default value, it might have a different path. Change `PWMPATH` to the output of the following command.
-
-```sh
-find /sys -name pwm1 | grep hwmon
-```
