@@ -1,9 +1,9 @@
 ''' controls fan speed on RockPro64 single board computer '''
 
-
-import sys
-import datetime
 import argparse
+import datetime
+import sys
+import subprocess
 
 CPUMONPATH = "/sys/class/thermal/thermal_zone0/temp"
 GPUMONPATH = "/sys/class/thermal/thermal_zone1/temp"
@@ -27,8 +27,14 @@ def get_log_path():
 
 def get_pwm():
     ''' returns current PWM value of fan '''
-    with open(PWMPATH, 'r', encoding="utf-8") as file:
+    with open(get_pwm_path, 'r', encoding="utf-8") as file:
         return file.readlines()[0].replace('\n', '')
+
+
+def get_pwm_max():
+    ''' returns maximum PWM value '''
+    return PWMMAX
+
 
 
 def get_pwm_min():
@@ -44,6 +50,12 @@ def get_pwm_new():
         return percentage_to_pwm(args.force)
     return temperature_to_pwm(get_temp())
 
+
+def get_pwm_path():
+    ''' returns path to pwm fan '''
+    if args.nooverride:
+        return PWMPATH
+    return subprocess.check_output("find /sys -name pwm1 | grep hwmon",shell=True).decode().strip('\n')
 
 def get_temp():
     ''' returns degrees celsius temperature from monitor '''
@@ -78,12 +90,12 @@ def percentage_to_pwm(percentage):
     if percentage < 0 or percentage > 100:
         message = "Expected 0 <= value <= 100, got value = " + str(percentage)
         raise argparse.ArgumentTypeError(message)
-    return round(percentage / 100 * PWMMAX)
+    return round(percentage / 100 * get_pwm_max())
 
 
 def pwm_to_percentage(pwm):
     ''' returns PWM value as percentage'''
-    return round(pwm / PWMMAX * 100)
+    return round(pwm / get_pwm_max() * 100)
 
 
 def temperature_to_pwm(temperature):
@@ -94,10 +106,10 @@ def temperature_to_pwm(temperature):
         raise ValueError(
             "Minimum temperature can't be higher than maximum temperature.") from exc
     if temperature >= get_temp_max():
-        return PWMMAX
+        return get_pwm_max()
     if temperature < get_temp_min():
         return 0
-    return round(PWMMAX / (get_temp_max() - get_temp_min())
+    return round(get_pwm_max() / (get_temp_max() - get_temp_min())
                  * (temperature - get_temp_min()))
 
 
@@ -109,10 +121,10 @@ def write_pwm(pwm):
         value = int(pwm)
     except ValueError as err:
         raise ValueError() from err
-    if value < 0 or value > PWMMAX:
-        raise ValueError("Expected 0 <= value <= " + PWMMAX +
+    if value < 0 or value > get_pwm_max():
+        raise ValueError("Expected 0 <= value <= " + get_pwm_max() +
                          ", got value = " + format(value))
-    with open(PWMPATH, 'w', encoding="utf-8") as file:
+    with open(get_pwm_path, 'w', encoding="utf-8") as file:
         if get_pwm_min() > pwm > 0:
             file.write(str(get_pwm_min()))
             if args.quiet is False:
@@ -130,6 +142,7 @@ def write_pwm(pwm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser,add_argument("--nooverride", action="store_true", help="Do not auto-override PWMPATH value.")
     parser.add_argument(
         "-f",
         "--force",
