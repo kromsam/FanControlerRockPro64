@@ -128,39 +128,40 @@ def write_pwm(pwm):
                   "% (PWM value: " + str(pwm) + ")")
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-f",
-    "--force",
-    type=int,
-    metavar="[0-100]",
-    help="Set a static fan speed, values from 0-100.")
-parser.add_argument("--gpu", action="store_true",
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-f",
+        "--force",
+        type=int,
+        metavar="[0-100]",
+        help="Set a static fan speed, values from 0-100.")
+    parser.add_argument("--gpu", action="store_true",
                     help="Use GPU temperature instead of CPU temperature.")
-parser.add_argument("-l", "--log", action="store_true",
+    parser.add_argument("-l", "--log", action="store_true",
                     help="Log to a file. Set path with '--path'.")
-parser.add_argument(
-    "--max",
-    type=int,
-    help="Fan speed will be maximum above set temperature. Default: 60C.")
-parser.add_argument(
-    "--min", type=int,
-    help="Fan will only switch on above set temperature threshold. Default: 40C.")
-parser.add_argument(
-    "--minpwm",
-    type=int,
-    metavar="[0-100]",
-    help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
-parser.add_argument(
-    "-p",
-    "--path",
-    help="Set path of logfile. Default: 'fan_controller.log' in folder of script.")
-parser.add_argument("-q", "--quiet", action="store_true",
-                    help="Run script quietly.")
+    parser.add_argument(
+        "--max",
+        type=int,
+        help="Fan speed will be maximum above set temperature. Default: 60C.")
+    parser.add_argument(
+        "--min", type=int,
+        help="Fan will only switch on above set temperature threshold. Default: 40C.")
+    parser.add_argument(
+        "--minpwm",
+        type=int,
+        metavar="[0-100]",
+        help="Set minimum fan speed, values from 0-100. Default: 24 (PWM value: 60).")
+    parser.add_argument(
+        "-p",
+        "--path",
+        help="Set path of logfile. Default: 'fan_controller.log' in folder of script.")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="Run script quietly.")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-write_pwm(get_pwm_new())
+    write_pwm(get_pwm_new())
 
-if args.log:
-    log_now()
+    if args.log:
+        log_now()
