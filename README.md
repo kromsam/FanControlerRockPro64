@@ -64,3 +64,11 @@ GPUMONPATH = "/sys/class/thermal/thermal_zone1/temp"
 PWMMAX = 255
 PWMPATH = "/sys/devices/platform/pwm-fan/hwmon/hwmon2/pwm1"
 ```
+
+## Troubleshooting
+
+If the script can't find PWM with the default value, it might have a default path. Change `PWMPATH` to the output of the following command.
+
+```sh
+find /sys -name pwm1 | grep hwmon
+```
