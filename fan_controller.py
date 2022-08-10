@@ -27,14 +27,13 @@ def get_log_path():
 
 def get_pwm():
     ''' returns current PWM value of fan '''
-    with open(get_pwm_path, 'r', encoding="utf-8") as file:
+    with open(get_pwm_path(), 'r', encoding="utf-8") as file:
         return file.readlines()[0].replace('\n', '')
 
 
 def get_pwm_max():
     ''' returns maximum PWM value '''
     return PWMMAX
-
 
 
 def get_pwm_min():
@@ -56,6 +55,7 @@ def get_pwm_path():
     if args.nooverride:
         return PWMPATH
     return subprocess.check_output("find /sys -name pwm1 | grep hwmon",shell=True).decode().strip('\n')
+
 
 def get_temp():
     ''' returns degrees celsius temperature from monitor '''
@@ -124,7 +124,7 @@ def write_pwm(pwm):
     if value < 0 or value > get_pwm_max():
         raise ValueError("Expected 0 <= value <= " + get_pwm_max() +
                          ", got value = " + format(value))
-    with open(get_pwm_path, 'w', encoding="utf-8") as file:
+    with open(get_pwm_path(), 'w', encoding="utf-8") as file:
         if get_pwm_min() > pwm > 0:
             file.write(str(get_pwm_min()))
             if args.quiet is False:
@@ -142,7 +142,7 @@ def write_pwm(pwm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser,add_argument("--nooverride", action="store_true", help="Do not auto-override PWMPATH value.")
+    parser.add_argument("--nooverride", action="store_true", help="Do not auto-override PWMPATH value.")
     parser.add_argument(
         "-f",
         "--force",
