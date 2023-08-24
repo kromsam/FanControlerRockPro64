@@ -77,4 +77,8 @@ PWMMAX = 255
 PWMPATH = "/sys/devices/platform/pwm-fan/hwmon/hwmon2/pwm1"
 ```
 
+## Troubleshooting
 
+### Setting up in DietPi
+
+Change `/sys/class/thermal/thermal_zone0` and `/sys/class/thermal/thermal_zone1` from `step_wise` to `user_space`.
